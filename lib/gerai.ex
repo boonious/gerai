@@ -3,6 +3,8 @@ defmodule Gerai do
   Documentation for Gerai.
   """
 
+  @cache_server_name GeraiJson
+
   @doc """
   Get a serialised JSON from cache by ID
 
@@ -13,14 +15,5 @@ defmodule Gerai do
 
   """
   @spec get(binary) :: binary
-  def get(_id) do
-    object = %{
-      "directed_by" => ["Béla Tarr"],
-      "genre" => ["Drama"],
-      "id" => "tt1316540",
-      "name" => "The Turin Horse"
-    }
-
-    Poison.encode!(object)
-  end
+  def get(id), do: GenServer.call(@cache_server_name, {:get, id})
 end

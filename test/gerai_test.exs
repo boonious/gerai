@@ -2,6 +2,8 @@ defmodule GeraiTest do
   use ExUnit.Case
   # doctest Gerai
 
+  @cache_server_name GeraiJson
+
   describe "client (CRUD)" do
     test "get" do
       json =
@@ -22,8 +24,7 @@ defmodule GeraiTest do
         "{\"name\":\"The Turin Horse\",\"id\":\"tt1316540\",\"genre\":[\"Drama\"],\"directed_by\":[\"Béla Tarr\"]}"
 
       id = "tt1316540"
-      {_, cache} = GenServer.start(Gerai.Cache, nil)
-      assert GenServer.call(cache, {:get, id}) == json
+      assert GenServer.call(@cache_server_name, {:get, id}) == json
     end
   end
 end
