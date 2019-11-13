@@ -19,6 +19,7 @@ defmodule GeraiTest do
 
   describe "client (CRUD)" do
     test "get json", context do
+      Gerai.put(context.json)
       assert Gerai.get(context.id) == {:ok, context.json}
     end
 
@@ -36,12 +37,13 @@ defmodule GeraiTest do
     end
 
     test "delete json" do
+      id = "uk-sport-1234"
+
       new_json =
         "{\"name\":\"sport blog title\",\"id\":\"uk-sport-1234\", \"content\": \"content of sport blog\"}"
 
-      id = "uk-sport-1234"
-
       Gerai.put(new_json)
+
       # make sure content is in the cache for deletion
       assert Gerai.get(id) == {:ok, new_json}
 
@@ -62,6 +64,7 @@ defmodule GeraiTest do
     end
 
     test "get call", context do
+      Gerai.put(context.json)
       assert GenServer.call(@cache_server_name, {:get, context.id}) == {:ok, context.json}
     end
 
@@ -103,13 +106,18 @@ defmodule GeraiTest do
       assert conn.status == 404
     end
 
-    test "GET by id", context do
+    test "GET by id" do
+      new_json =
+        "{\"name\":\"music blog title\",\"id\":\"uk-music-678\", \"content\": \"content of music blog\"}"
+
+      Gerai.put(new_json)
+
       conn =
         :get
-        |> conn("/?id=#{context.id}", "")
+        |> conn("/?id=uk-music-678", "")
         |> Gerai.Router.call(@opts)
 
-      assert conn.resp_body == context.json
+      assert conn.resp_body == new_json
       assert conn.status == 200
     end
 
