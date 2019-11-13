@@ -10,7 +10,8 @@ defmodule Gerai.Application do
     children = [
       # Starts a worker by calling: Gerai.Worker.start_link(arg)
       # {Gerai.Worker, arg},
-      {Gerai.Cache, name: GeraiJson}
+      {Gerai.Cache, name: GeraiJson},
+      {Plug.Cowboy, scheme: :http, plug: Gerai.Router, options: [port: 8080]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
