@@ -17,7 +17,7 @@ defmodule Gerai.Router do
       status = Gerai.put(json)
 
       case status do
-        :ok -> send_resp(conn, 200, "Put successfully")
+        :ok -> send_resp(conn, 200, "PUT ok")
         :error -> send_resp(conn, 501, "Oops")
       end
     else
@@ -32,11 +32,20 @@ defmodule Gerai.Router do
       status = Gerai.put(json)
 
       case status do
-        :ok -> send_resp(conn, 200, "Post successfully")
+        :ok -> send_resp(conn, 200, "POST ok")
         :error -> send_resp(conn, 501, "Oops")
       end
     else
       send_resp(conn, 501, "Oops")
+    end
+  end
+
+  delete "/:json_id" do
+    status = Gerai.delete(json_id)
+
+    case status do
+      :ok -> send_resp(conn, 200, "DELETE ok")
+      :error -> send_resp(conn, 200, "Nothing deleted")
     end
   end
 

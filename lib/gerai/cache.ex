@@ -34,4 +34,14 @@ defmodule Gerai.Cache do
       {:reply, :error, state}
     end
   end
+
+  def handle_call({:delete, id}, _from, state) do
+    new_state = Map.delete(state, id)
+
+    state_size = Map.size(state)
+    new_state_size = Map.size(new_state)
+
+    status = if state_size != new_state_size, do: :ok, else: :error
+    {:reply, status, new_state}
+  end
 end

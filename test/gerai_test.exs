@@ -34,6 +34,25 @@ defmodule GeraiTest do
       obj = %{"directed_by" => ["Hirokazu Koreeda"]}
       assert Gerai.put(Poison.encode!(obj)) == :error
     end
+
+    test "delete json" do
+      new_json =
+        "{\"name\":\"sport blog title\",\"id\":\"uk-sport-1234\", \"content\": \"content of sport blog\"}"
+
+      id = "uk-sport-1234"
+
+      Gerai.put(new_json)
+      # make sure content is in the cache for deletion
+      assert Gerai.get(id) == {:ok, new_json}
+
+      # delete json and make sure it no longer in the cache
+      assert Gerai.delete(id) == :ok
+      assert Gerai.get(id) == {:error, nil}
+    end
+
+    test "delete non-existing json" do
+      assert Gerai.delete("not-existing-id") == :error
+    end
   end
 
   describe "Cache server" do
@@ -48,6 +67,18 @@ defmodule GeraiTest do
 
     test "put call", context do
       assert GenServer.call(@cache_server_name, {:put, context.json}) == :ok
+    end
+
+    test "delete call" do
+      new_json =
+        "{\"name\":\"politics blog title\",\"id\":\"uk-politics-678\", \"content\": \"content of politics blog\"}"
+
+      id = "uk-politics-678"
+
+      Gerai.put(new_json)
+
+      assert GenServer.call(@cache_server_name, {:delete, id}) == :ok
+      assert Gerai.get(id) == {:error, nil}
     end
   end
 
@@ -88,7 +119,7 @@ defmodule GeraiTest do
         |> conn("/", context.put_json)
         |> Gerai.Router.call(@opts)
 
-      assert conn.resp_body == "Put successfully"
+      assert conn.resp_body == "PUT ok"
       assert conn.status == 200
 
       # ensure json is in the cache
@@ -113,7 +144,7 @@ defmodule GeraiTest do
         |> conn("/", new_json)
         |> Gerai.Router.call(@opts)
 
-      assert conn.resp_body == "Post successfully"
+      assert conn.resp_body == "POST ok"
       assert conn.status == 200
 
       # ensure json is in the cache
@@ -128,6 +159,34 @@ defmodule GeraiTest do
 
       assert conn.resp_body == "Oops"
       assert conn.status == 501
+    end
+
+    test "DELETE json" do
+      new_json =
+        "{\"name\":\"O2 ATP final\",\"id\":\"uk-tennis-123\", \"content\": \"match report of the ATP final\"}"
+
+      id = "uk-tennis-123"
+
+      Gerai.put(new_json)
+      assert Gerai.get(id) == {:ok, new_json}
+
+      conn =
+        :delete
+        |> conn("/#{id}", nil)
+        |> Gerai.Router.call(@opts)
+
+      assert conn.resp_body == "DELETE ok"
+      assert Gerai.get(id) == {:error, nil}
+    end
+
+    test "DELETE handles non existing json" do
+      conn =
+        :delete
+        |> conn("/not-existing-json-id")
+        |> Gerai.Router.call(@opts)
+
+      assert conn.resp_body == "Nothing deleted"
+      assert conn.status == 200
     end
   end
 end
