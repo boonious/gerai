@@ -4,15 +4,23 @@ defmodule Gerai do
   """
 
   @doc """
-  Hello world.
+  Get a serialised JSON from cache by ID
 
   ## Examples
 
-      iex> Gerai.hello()
-      :world
+      iex> Gerai.get("tt1316540")
+      "{\\\"name\\\":\\\"The Turin Horse\\\",\\\"id\\\":\\\"tt1316540\\\",\\\"genre\\\":[\\\"Drama\\\"],\\\"directed_by\\\":[\\\"Béla Tarr\\\"]}"
 
   """
-  def hello do
-    :world
+  @spec get(binary) :: binary
+  def get(_id) do
+    object = %{
+      "directed_by" => ["Béla Tarr"],
+      "genre" => ["Drama"],
+      "id" => "tt1316540",
+      "name" => "The Turin Horse"
+    }
+
+    Poison.encode!(object)
   end
 end
