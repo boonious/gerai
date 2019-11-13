@@ -13,4 +13,8 @@ defmodule Gerai.Cache do
     state = %{obj0["id"] => Poison.encode!(obj0)}
     {:ok, state}
   end
+
+  def handle_call({:get, id}, _from, state) do
+    {:reply, Map.get(state, id), state}
+  end
 end
