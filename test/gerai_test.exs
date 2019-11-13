@@ -8,17 +8,31 @@ defmodule GeraiTest do
   @opts Gerai.Router.init([])
 
   setup_all do
-    json =
-      "{\"name\":\"The Turin Horse\",\"id\":\"tt1316540\",\"genre\":[\"Drama\"],\"directed_by\":[\"Béla Tarr\"]}"
-
-    id = "tt1316540"
-
-    {:ok, json: json, id: id}
+    {:ok,
+     id: "tt1316540",
+     json:
+       "{\"name\":\"The Turin Horse\",\"id\":\"tt1316540\",\"genre\":[\"Drama\"],\"directed_by\":[\"Béla Tarr\"]}",
+     put_id: "1234",
+     put_json:
+       "{\"name\":\"article\",\"id\":\"1234\",\"components\":[{\"name\":\"article_body\",\"location\":\"/path/to/article/content\"}]}"}
   end
 
   describe "client (CRUD)" do
-    test "get", context do
+    test "get json", context do
       assert Gerai.get(context.id) == {:ok, context.json}
+    end
+
+    test "put json", context do
+      assert Gerai.put(context.put_json) == :ok
+      assert Gerai.get(context.put_id) == {:ok, context.put_json}
+    end
+
+    test "put handles malformed json" do
+      assert Gerai.put("this is not a valid json string") == :error
+
+      # json with missing id
+      obj = %{"directed_by" => ["Hirokazu Koreeda"]}
+      assert Gerai.put(Poison.encode!(obj)) == :error
     end
   end
 
@@ -30,6 +44,10 @@ defmodule GeraiTest do
 
     test "get call", context do
       assert GenServer.call(@cache_server_name, {:get, context.id}) == {:ok, context.json}
+    end
+
+    test "put call", context do
+      assert GenServer.call(@cache_server_name, {:put, context.json}) == :ok
     end
   end
 
@@ -62,6 +80,29 @@ defmodule GeraiTest do
 
       assert conn.resp_body == context.json
       assert conn.status == 200
+    end
+
+    test "put json", context do
+      conn =
+        :put
+        |> conn("/", context.put_json)
+        |> Gerai.Router.call(@opts)
+
+      assert conn.resp_body == "Put successfully"
+      assert conn.status == 200
+
+      # ensure json is in the cache
+      assert Gerai.get(context.put_id) == {:ok, context.put_json}
+    end
+
+    test "put handles malformed json" do
+      conn =
+        :put
+        |> conn("/", "not valid json")
+        |> Gerai.Router.call(@opts)
+
+      assert conn.resp_body == "Oops"
+      assert conn.status == 501
     end
   end
 end

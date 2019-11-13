@@ -10,6 +10,21 @@ defmodule Gerai.Router do
     send_resp(conn, 200, get(params["id"]))
   end
 
+  put "/" do
+    {read_status, json, _} = read_body(conn)
+
+    if read_status == :ok do
+      status = Gerai.put(json)
+
+      case status do
+        :ok -> send_resp(conn, 200, "Put successfully")
+        :error -> send_resp(conn, 501, "Oops")
+      end
+    else
+      send_resp(conn, 501, "Oops")
+    end
+  end
+
   match _ do
     send_resp(conn, 404, "Oops")
   end
