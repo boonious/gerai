@@ -7,12 +7,18 @@ defmodule GeraiTest do
   @cache_server_name GeraiJson
   @opts Gerai.Router.init([])
 
-  describe "client (CRUD)" do
-    test "get" do
-      json =
-        "{\"name\":\"The Turin Horse\",\"id\":\"tt1316540\",\"genre\":[\"Drama\"],\"directed_by\":[\"Béla Tarr\"]}"
+  setup_all do
+    json =
+      "{\"name\":\"The Turin Horse\",\"id\":\"tt1316540\",\"genre\":[\"Drama\"],\"directed_by\":[\"Béla Tarr\"]}"
 
-      assert Gerai.get("tt1316540") == json
+    id = "tt1316540"
+
+    {:ok, json: json, id: id}
+  end
+
+  describe "client (CRUD)" do
+    test "get", context do
+      assert Gerai.get(context.id) == {:ok, context.json}
     end
   end
 
@@ -22,12 +28,8 @@ defmodule GeraiTest do
       assert status == :ok
     end
 
-    test "get call" do
-      json =
-        "{\"name\":\"The Turin Horse\",\"id\":\"tt1316540\",\"genre\":[\"Drama\"],\"directed_by\":[\"Béla Tarr\"]}"
-
-      id = "tt1316540"
-      assert GenServer.call(@cache_server_name, {:get, id}) == json
+    test "get call", context do
+      assert GenServer.call(@cache_server_name, {:get, context.id}) == {:ok, context.json}
     end
   end
 
@@ -52,16 +54,13 @@ defmodule GeraiTest do
       assert conn.status == 404
     end
 
-    test "get by id" do
-      json =
-        "{\"name\":\"The Turin Horse\",\"id\":\"tt1316540\",\"genre\":[\"Drama\"],\"directed_by\":[\"Béla Tarr\"]}"
-
+    test "get by id", context do
       conn =
         :get
-        |> conn("/?id=tt1316540", "")
+        |> conn("/?id=#{context.id}", "")
         |> Gerai.Router.call(@opts)
 
-      assert conn.resp_body == json
+      assert conn.resp_body == context.json
       assert conn.status == 200
     end
   end

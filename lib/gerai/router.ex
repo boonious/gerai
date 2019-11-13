@@ -18,7 +18,7 @@ defmodule Gerai.Router do
   defp get(nil), do: "Welcome"
 
   defp get(id) do
-    json = Gerai.get(id)
+    {_status, json} = Gerai.get(id)
     if json, do: json, else: "Welcome"
   end
 end
