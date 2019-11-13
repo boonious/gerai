@@ -52,7 +52,7 @@ defmodule GeraiTest do
   end
 
   describe "HTTP REST" do
-    test "get /" do
+    test "GET /" do
       conn =
         :get
         |> conn("/", "")
@@ -62,7 +62,7 @@ defmodule GeraiTest do
       assert conn.status == 200
     end
 
-    test "get 404" do
+    test "GET 404" do
       conn =
         :get
         |> conn("/not_part_of_the_api", "")
@@ -72,7 +72,7 @@ defmodule GeraiTest do
       assert conn.status == 404
     end
 
-    test "get by id", context do
+    test "GET by id", context do
       conn =
         :get
         |> conn("/?id=#{context.id}", "")
@@ -82,7 +82,7 @@ defmodule GeraiTest do
       assert conn.status == 200
     end
 
-    test "put json", context do
+    test "PUT json", context do
       conn =
         :put
         |> conn("/", context.put_json)
@@ -95,9 +95,34 @@ defmodule GeraiTest do
       assert Gerai.get(context.put_id) == {:ok, context.put_json}
     end
 
-    test "put handles malformed json" do
+    test "PUT handles malformed json" do
       conn =
         :put
+        |> conn("/", "not valid json")
+        |> Gerai.Router.call(@opts)
+
+      assert conn.resp_body == "Oops"
+      assert conn.status == 501
+    end
+
+    test "POST json" do
+      new_json = "{\"name\":\"blog title\",\"id\":\"uk-1234\", \"content\": \"content of blog\"}"
+
+      conn =
+        :post
+        |> conn("/", new_json)
+        |> Gerai.Router.call(@opts)
+
+      assert conn.resp_body == "Post successfully"
+      assert conn.status == 200
+
+      # ensure json is in the cache
+      assert Gerai.get("uk-1234") == {:ok, new_json}
+    end
+
+    test "POST handles malformed json" do
+      conn =
+        :post
         |> conn("/", "not valid json")
         |> Gerai.Router.call(@opts)
 

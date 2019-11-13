@@ -18,6 +18,7 @@ defmodule Gerai do
   def get(id), do: GenServer.call(@cache_server_name, {:get, id})
 
   # TODO: implement as asyncronuous call `cast/handle_cast`
+  # handles both post and put requests
   @spec put(binary) :: :ok | :error
   def put(json), do: GenServer.call(@cache_server_name, {:put, json})
 end
