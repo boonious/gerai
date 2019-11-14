@@ -14,7 +14,7 @@ defmodule Gerai do
   @doc """
   Get a serialised JSON from cache by ID
   """
-  @spec get(binary) :: {:ok, binary} | {:error, nil}
+  @spec get(binary) :: {:ok, binary | list[binary]} | {:error, nil}
   def get(id), do: GenServer.call(@cache_server_name, {:get, id})
 
   # TODO: implement as asyncronuous call `cast/handle_cast`

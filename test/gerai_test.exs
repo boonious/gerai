@@ -23,6 +23,18 @@ defmodule GeraiTest do
       assert Gerai.get(context.id) == {:ok, context.json}
     end
 
+    test "get all jsons" do
+      Gerai.put("{\"id\":\"test_all1\"}")
+      Gerai.put("{\"id\":\"test_all2\"}")
+      Gerai.put("{\"id\":\"test_all3\"}")
+
+      {status, json_list} = Gerai.get(:all)
+      objects = Enum.filter(json_list, fn x -> String.match?(x, ~r/test_all/) end)
+
+      assert status == :ok
+      assert length(objects) == 3
+    end
+
     test "put json", context do
       assert Gerai.put(context.put_json) == :ok
       assert Gerai.get(context.put_id) == {:ok, context.put_json}
@@ -87,12 +99,16 @@ defmodule GeraiTest do
 
   describe "HTTP REST" do
     test "GET /" do
+      Gerai.put("{\"id\":\"http_all1\"}")
+      Gerai.put("{\"id\":\"http_all2\"}")
+
       conn =
         :get
         |> conn("/", "")
         |> Gerai.Router.call(@opts)
 
-      assert conn.resp_body == "Welcome"
+      assert String.contains?(conn.resp_body, "{\"id\":\"http_all1\"}")
+      assert String.contains?(conn.resp_body, "{\"id\":\"http_all2\"}")
       assert conn.status == 200
     end
 

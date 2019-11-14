@@ -12,6 +12,10 @@ defmodule Gerai.Cache do
     {:ok, state}
   end
 
+  def handle_call({:get, :all}, _from, state) do
+    {:reply, {:ok, Map.values(state)}, state}
+  end
+
   def handle_call({:get, id}, _from, state) do
     object = Map.get(state, id)
     reply = if object, do: {:ok, object}, else: {:error, nil}

@@ -53,11 +53,14 @@ defmodule Gerai.Router do
     send_resp(conn, 404, "Oops")
   end
 
-  defp get(""), do: "Welcome"
-  defp get(nil), do: "Welcome"
+  defp get(id) when id == "" or id == nil do
+    {_, objects} = Gerai.get(:all)
+
+    "[" <> Enum.join(objects, ",") <> "]"
+  end
 
   defp get(id) do
     {_status, json} = Gerai.get(id)
-    if json, do: json, else: "Welcome"
+    if json, do: json, else: "[]"
   end
 end
