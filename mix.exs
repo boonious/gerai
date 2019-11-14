@@ -14,6 +14,17 @@ defmodule Gerai.MixProject do
         "coveralls.detail": :test,
         "coveralls.post": :test,
         "coveralls.html": :test
+      ],
+
+      # Docs
+      name: "gerai",
+      description: "Gerai is an OTP-compliant JSON object cache for Elixir.",
+      package: package(),
+      source_url: "https://github.com/boonious/gerai",
+      homepage_url: "https://github.com/boonious/gerai",
+      docs: [
+        main: "gerai",
+        extras: ["README.md"]
       ]
     ]
   end
@@ -33,6 +44,18 @@ defmodule Gerai.MixProject do
       {:excoveralls, "~> 0.12", only: :test},
       {:plug_cowboy, "~> 2.0"},
       {:poison, "~> 3.1"}
+    ]
+  end
+
+  defp package do
+    [
+      name: "gerai",
+      maintainers: ["Boon Low"],
+      licenses: ["Apache 2.0"],
+      links: %{
+        Changelog: "https://github.com/boonious/gerai/blob/master/CHANGELOG.md",
+        GitHub: "https://github.com/boonious/gerai"
+      }
     ]
   end
 end

@@ -6,11 +6,12 @@ defmodule Gerai.Application do
   use Application
 
   def start(_type, _args) do
-    # List all child processes to be supervised
     children = [
-      # Starts a worker by calling: Gerai.Worker.start_link(arg)
-      # {Gerai.Worker, arg},
+      # Starts the cache server, with a fixed name
+      # The server name could be configurable via environmental variable
       {Gerai.Cache, name: GeraiJson},
+
+      # Starts the HTTP interface which could also be made optional via configuration
       {Plug.Cowboy, scheme: :http, plug: Gerai.Router, options: [port: 8080]}
     ]
 

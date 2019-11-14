@@ -1,4 +1,8 @@
+# Simple HTTP interface that facililate and forward requests 
+# to service interface functions
+
 defmodule Gerai.Router do
+  @moduledoc false
   use Plug.Router
 
   plug(:match)
@@ -47,6 +51,7 @@ defmodule Gerai.Router do
     send_resp(conn, 404, "Not Found")
   end
 
+  # retrieve all objects and render them as JSON array
   defp get(id) when id == "" or id == nil do
     {_, objects} = Gerai.get(:all)
 

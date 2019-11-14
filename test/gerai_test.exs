@@ -1,8 +1,8 @@
+# TODO: need refactoring, cleaning and breaking up
+# Could write a suite of HTTP tests with Bypass, and performance testing as well
 defmodule GeraiTest do
   use ExUnit.Case
   use Plug.Test
-
-  # doctest Gerai
 
   @cache_server_name GeraiJson
   @opts Gerai.Router.init([])
@@ -41,7 +41,7 @@ defmodule GeraiTest do
     end
 
     test "put handles malformed json" do
-      assert Gerai.put("id","this is not a valid json string") == :error
+      assert Gerai.put("id", "this is not a valid json string") == :error
 
       # json with missing id
       obj = %{"directed_by" => ["Hirokazu Koreeda"]}
