@@ -19,8 +19,10 @@ defmodule Gerai do
 
   # TODO: implement as asyncronuous call `cast/handle_cast`
   # handles both post and put requests
-  @spec put(binary) :: :ok | :error
-  def put(json), do: GenServer.call(@cache_server_name, {:put, json})
+  @spec put(binary, binary) :: :ok | :error
+  def put("", _), do: :error
+  def put(nil, _), do: :error
+  def put(id, json), do: GenServer.call(@cache_server_name, {:put, id, json})
 
   # TODO: implement as asyncronuous call `cast/handle_cast`
   @spec delete(binary) :: :ok | :error

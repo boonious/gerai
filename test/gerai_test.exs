@@ -19,14 +19,14 @@ defmodule GeraiTest do
 
   describe "client (CRUD)" do
     test "get json", context do
-      Gerai.put(context.json)
+      Gerai.put(context.id, context.json)
       assert Gerai.get(context.id) == {:ok, context.json}
     end
 
     test "get all jsons" do
-      Gerai.put("{\"id\":\"test_all1\"}")
-      Gerai.put("{\"id\":\"test_all2\"}")
-      Gerai.put("{\"id\":\"test_all3\"}")
+      Gerai.put("test_all1", "{\"id\":\"test_all1\"}")
+      Gerai.put("test_all2", "{\"id\":\"test_all2\"}")
+      Gerai.put("test_all3", "{\"id\":\"test_all3\"}")
 
       {status, json_list} = Gerai.get(:all)
       objects = Enum.filter(json_list, fn x -> String.match?(x, ~r/test_all/) end)
@@ -36,16 +36,16 @@ defmodule GeraiTest do
     end
 
     test "put json", context do
-      assert Gerai.put(context.put_json) == :ok
+      assert Gerai.put(context.put_id, context.put_json) == :ok
       assert Gerai.get(context.put_id) == {:ok, context.put_json}
     end
 
     test "put handles malformed json" do
-      assert Gerai.put("this is not a valid json string") == :error
+      assert Gerai.put("id","this is not a valid json string") == :error
 
       # json with missing id
       obj = %{"directed_by" => ["Hirokazu Koreeda"]}
-      assert Gerai.put(Poison.encode!(obj)) == :error
+      assert Gerai.put("", Poison.encode!(obj)) == :error
     end
 
     test "delete json" do
@@ -54,7 +54,7 @@ defmodule GeraiTest do
       new_json =
         "{\"name\":\"sport blog title\",\"id\":\"uk-sport-1234\", \"content\": \"content of sport blog\"}"
 
-      Gerai.put(new_json)
+      Gerai.put(id, new_json)
 
       # make sure content is in the cache for deletion
       assert Gerai.get(id) == {:ok, new_json}
@@ -76,12 +76,12 @@ defmodule GeraiTest do
     end
 
     test "get call", context do
-      Gerai.put(context.json)
+      Gerai.put(context.id, context.json)
       assert GenServer.call(@cache_server_name, {:get, context.id}) == {:ok, context.json}
     end
 
     test "put call", context do
-      assert GenServer.call(@cache_server_name, {:put, context.json}) == :ok
+      assert GenServer.call(@cache_server_name, {:put, context.id, context.json}) == :ok
     end
 
     test "delete call" do
@@ -90,7 +90,7 @@ defmodule GeraiTest do
 
       id = "uk-politics-678"
 
-      Gerai.put(new_json)
+      Gerai.put(id, new_json)
 
       assert GenServer.call(@cache_server_name, {:delete, id}) == :ok
       assert Gerai.get(id) == {:error, nil}
@@ -99,8 +99,8 @@ defmodule GeraiTest do
 
   describe "HTTP REST" do
     test "GET /" do
-      Gerai.put("{\"id\":\"http_all1\"}")
-      Gerai.put("{\"id\":\"http_all2\"}")
+      Gerai.put("http_all1", "{\"id\":\"http_all1\"}")
+      Gerai.put("http_all2", "{\"id\":\"http_all2\"}")
 
       conn =
         :get
@@ -118,7 +118,7 @@ defmodule GeraiTest do
         |> conn("/not_part_of_the_api", "")
         |> Gerai.Router.call(@opts)
 
-      assert conn.resp_body == "Oops"
+      assert conn.resp_body == "Not Found"
       assert conn.status == 404
     end
 
@@ -126,7 +126,7 @@ defmodule GeraiTest do
       new_json =
         "{\"name\":\"music blog title\",\"id\":\"uk-music-678\", \"content\": \"content of music blog\"}"
 
-      Gerai.put(new_json)
+      Gerai.put("uk-music-678", new_json)
 
       conn =
         :get
@@ -138,26 +138,37 @@ defmodule GeraiTest do
     end
 
     test "PUT json", context do
+      Gerai.delete(context.put_id)
+
       conn =
         :put
-        |> conn("/", context.put_json)
+        |> conn("/#{context.put_id}", context.put_json)
         |> Gerai.Router.call(@opts)
 
-      assert conn.resp_body == "PUT ok"
-      assert conn.status == 200
+      assert conn.resp_body == "Created"
+      assert conn.status == 201
 
       # ensure json is in the cache
       assert Gerai.get(context.put_id) == {:ok, context.put_json}
+
+      # update json
+      conn =
+        :put
+        |> conn("/#{context.put_id}", context.put_json)
+        |> Gerai.Router.call(@opts)
+
+      assert conn.resp_body == "OK"
+      assert conn.status == 200
     end
 
     test "PUT handles malformed json" do
       conn =
         :put
-        |> conn("/", "not valid json")
+        |> conn("/not_valid_json_id")
         |> Gerai.Router.call(@opts)
 
-      assert conn.resp_body == "Oops"
-      assert conn.status == 501
+      assert conn.resp_body == "Internal Server Error"
+      assert conn.status == 500
     end
 
     test "POST json" do
@@ -165,10 +176,10 @@ defmodule GeraiTest do
 
       conn =
         :post
-        |> conn("/", new_json)
+        |> conn("/uk-1234", new_json)
         |> Gerai.Router.call(@opts)
 
-      assert conn.resp_body == "POST ok"
+      assert conn.resp_body == "OK"
       assert conn.status == 200
 
       # ensure json is in the cache
@@ -178,11 +189,11 @@ defmodule GeraiTest do
     test "POST handles malformed json" do
       conn =
         :post
-        |> conn("/", "not valid json")
+        |> conn("/not_valid_json_post_id")
         |> Gerai.Router.call(@opts)
 
-      assert conn.resp_body == "Oops"
-      assert conn.status == 501
+      assert conn.resp_body == "Internal Server Error"
+      assert conn.status == 500
     end
 
     test "DELETE json" do
@@ -191,7 +202,7 @@ defmodule GeraiTest do
 
       id = "uk-tennis-123"
 
-      Gerai.put(new_json)
+      Gerai.put(id, new_json)
       assert Gerai.get(id) == {:ok, new_json}
 
       conn =
@@ -199,7 +210,7 @@ defmodule GeraiTest do
         |> conn("/#{id}", nil)
         |> Gerai.Router.call(@opts)
 
-      assert conn.resp_body == "DELETE ok"
+      assert conn.resp_body == "OK"
       assert Gerai.get(id) == {:error, nil}
     end
 
@@ -209,8 +220,8 @@ defmodule GeraiTest do
         |> conn("/not-existing-json-id")
         |> Gerai.Router.call(@opts)
 
-      assert conn.resp_body == "Nothing deleted"
-      assert conn.status == 200
+      assert conn.resp_body == ""
+      assert conn.status == 204
     end
   end
 end

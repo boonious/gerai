@@ -22,11 +22,12 @@ defmodule Gerai.Cache do
     {:reply, reply, state}
   end
 
-  def handle_call({:put, json_s}, _from, state) when is_binary(json_s) do
-    {status, object} = Poison.decode(json_s)
+  def handle_call({:put, id, json_s}, _from, state) when is_binary(json_s) do
+    resp = Poison.decode(json_s)
+    status = elem(resp, 0)
 
-    if status == :ok and object["id"] do
-      {:reply, :ok, Map.put(state, object["id"], json_s)}
+    if status == :ok do
+      {:reply, :ok, Map.put(state, id, json_s)}
     else
       {:reply, :error, state}
     end
