@@ -34,7 +34,7 @@ Start the server up through Elixir interactive shell `iex -S mix`
 ```
 ### Example - HTTP interface
 
-The cache can also be accessed via the `http://localhost:8080/` endpoint, while the application
+The cache is also accessible via an endpoint - `http://localhost:8080/`, while the application
 is running through one of the following ways:
 
  - `iex -S mix`

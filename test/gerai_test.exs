@@ -1,10 +1,10 @@
 # TODO: need refactoring, cleaning and breaking up
-# Could write a suite of HTTP tests with Bypass, and performance testing as well
+# Could write a suite of HTTP tests with Bypass + performance testing as well
 defmodule GeraiTest do
   use ExUnit.Case
   use Plug.Test
 
-  @cache_server_name GeraiJson
+  @cache_server GeraiJson
   @opts Gerai.Router.init([])
 
   setup_all do
@@ -77,11 +77,11 @@ defmodule GeraiTest do
 
     test "get call", context do
       Gerai.put(context.id, context.json)
-      assert GenServer.call(@cache_server_name, {:get, context.id}) == {:ok, context.json}
+      assert GenServer.call(@cache_server, {:get, context.id}) == {:ok, context.json}
     end
 
     test "put call", context do
-      assert GenServer.call(@cache_server_name, {:put, context.id, context.json}) == :ok
+      assert GenServer.call(@cache_server, {:put, context.id, context.json}) == :ok
     end
 
     test "delete call" do
@@ -92,7 +92,7 @@ defmodule GeraiTest do
 
       Gerai.put(id, new_json)
 
-      assert GenServer.call(@cache_server_name, {:delete, id}) == :ok
+      assert GenServer.call(@cache_server, {:delete, id}) == :ok
       assert Gerai.get(id) == {:error, nil}
     end
   end

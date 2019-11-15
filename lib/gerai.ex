@@ -22,13 +22,13 @@ defmodule Gerai do
       :ok
   """
 
-  @cache_server_name GeraiJson
+  @cache_server GeraiJson
 
   @doc """
   Retrieve JSON objects from cache by ID or `:all`
   """
   @spec get(binary | :all) :: {:ok, binary | list[binary]} | {:error, nil}
-  def get(id), do: GenServer.call(@cache_server_name, {:get, id})
+  def get(id), do: GenServer.call(@cache_server, {:get, id})
 
   @doc """
   Cache a serialised JSON by ID
@@ -38,12 +38,12 @@ defmodule Gerai do
   @spec put(binary, binary) :: :ok | :error
   def put("", _), do: :error
   def put(nil, _), do: :error
-  def put(id, json), do: GenServer.call(@cache_server_name, {:put, id, json})
+  def put(id, json), do: GenServer.call(@cache_server, {:put, id, json})
 
   @doc """
   Delete a JSON object from cache by ID
   """
   # TODO: perhaps in asyncronuous mode with `cast/handle_cast`
   @spec delete(binary) :: :ok | :error
-  def delete(id), do: GenServer.call(@cache_server_name, {:delete, id})
+  def delete(id), do: GenServer.call(@cache_server, {:delete, id})
 end

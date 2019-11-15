@@ -1,5 +1,5 @@
-# Simple HTTP interface that facililate and forward requests 
-# to service interface functions
+# Simple HTTP interface that facililates and forwards requests
+# to server interface functions
 
 defmodule Gerai.Router do
   @moduledoc false

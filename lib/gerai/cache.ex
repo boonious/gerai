@@ -2,8 +2,8 @@ defmodule Gerai.Cache do
   @moduledoc false
   use GenServer
 
-  # start up the cache server when application is run
-  # via the application Supervisor tree child spec - Gerai.Application
+  # fire up the cache server, e.g. on application startup
+  # via the Supervisor tree child spec - Gerai.Application
   def start_link(options \\ []) do
     GenServer.start_link(__MODULE__, nil, options)
   end
